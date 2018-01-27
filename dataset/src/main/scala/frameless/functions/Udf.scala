@@ -75,6 +75,7 @@ trait Udf {
     }
 }
 
+// let's make this package private
 /**
   * NB: Implementation detail, isn't intended to be directly used.
   *

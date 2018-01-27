@@ -42,6 +42,22 @@ sealed class TypedColumn[T, U](
     this(FramelessInternals.expr(column))
   }
 
+  /**
+    * do this on the new column branch.
+    * Create a new column type called NonUdfTypedColumn that extends AbstractTypedColumn.
+    * We then make the map below take that kind of column, so we cannot apply UDF.
+    *
+    * When we build a UDF we create something that takes u from a column that is NOT NonUdfTypedColumn.
+    * Or we simply have UDFs to be on TypedColumn and not on AbstractTypedColumn.
+    * @tparam X
+    */
+  trait Mapper[X] {
+    def map[G](u: TypedColumn[T, X] => TypedColumn[T, G]): TypedColumn[T, Option[G]] =
+      u(self.asInstanceOf[TypedColumn[T, X]]).asInstanceOf[TypedColumn[T, Option[G]]]
+  }
+
+  def opt[X](implicit x: U <:< Option[X]): Mapper[X] = new Mapper[X] {}
+
   /** Fall back to an untyped Column
     */
   def untyped: Column = new Column(expr)
